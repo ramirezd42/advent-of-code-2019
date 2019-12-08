@@ -24,7 +24,7 @@ defmodule Program do
         case op_code do
           nil -> nil
           99 -> {Enum.at(mem, 0), {-1, mem}}
-          _ -> {Enum.at(mem, 0), {cursor + 4, Program.execute_operation(cursor, mem)}}
+          _ -> {Enum.at(mem, 0), {cursor + 4, execute_operation(cursor, mem)}}
         end
       end)
 
@@ -36,18 +36,17 @@ defmodule Program do
     lhs = Enum.at(mem, Enum.at(mem, cursor + 1))
     rhs = Enum.at(mem, Enum.at(mem, cursor + 2))
     store_at = Enum.at(mem, cursor + 3)
-    value = Instruction.evaluate(opcode, lhs, rhs)
+    value = evaluate_instruction(opcode, lhs, rhs)
     mem = List.replace_at(mem, store_at, value)
     mem
   end
-end
 
-defmodule Instruction do
-  def evaluate(1, lhs, rhs) do
+  def evaluate_instruction(1, lhs, rhs) do
     lhs + rhs
   end
 
-  def evaluate(2, lhs, rhs) do
+  def evaluate_instruction(2, lhs, rhs) do
     lhs * rhs
   end
 end
+
