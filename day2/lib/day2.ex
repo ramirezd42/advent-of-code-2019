@@ -1,13 +1,13 @@
 defmodule Day2 do
   def solve do
-    mem = Program.import_program('input')
+    mem = IntcodeComputer.import_program('input')
     mem = List.replace_at(mem, 1, 12)
     mem = List.replace_at(mem, 2, 2)
-    Program.execute_program(mem)
+    IntcodeComputer.execute_program(mem)
   end
 end
 
-defmodule Program do
+defmodule IntcodeComputer do
   def import_program(path) do
     file = File.read!(path)
 
@@ -18,34 +18,34 @@ defmodule Program do
 
   def execute_program(mem) do
     stream =
-      Stream.unfold({0, mem}, fn {cursor, mem} ->
-        op_code = if cursor >= 0, do: Enum.at(mem, cursor), else: nil
+      Stream.unfold({0, mem}, fn {instruction_pointer, mem} ->
+        op_code = if instruction_pointer >= 0, do: Enum.at(mem, instruction_pointer), else: nil
 
         case op_code do
           nil -> nil
           99 -> {Enum.at(mem, 0), {-1, mem}}
-          _ -> {Enum.at(mem, 0), {cursor + 4, execute_operation(cursor, mem)}}
+          _ -> {Enum.at(mem, 0), {instruction_pointer + 4, execute_instruction(instruction_pointer, mem)}}
         end
       end)
 
     Enum.reduce(stream, fn val, _ -> val end)
   end
 
-  def execute_operation(cursor, mem) do
-    opcode = Enum.at(mem, cursor)
-    lhs = Enum.at(mem, Enum.at(mem, cursor + 1))
-    rhs = Enum.at(mem, Enum.at(mem, cursor + 2))
-    store_at = Enum.at(mem, cursor + 3)
-    value = evaluate_instruction(opcode, lhs, rhs)
-    mem = List.replace_at(mem, store_at, value)
+  def execute_instruction(instruction_pointer, mem) do
+    opcode = Enum.at(mem, instruction_pointer)
+    lhs = Enum.at(mem, Enum.at(mem, instruction_pointer + 1))
+    rhs = Enum.at(mem, Enum.at(mem, instruction_pointer + 2))
+    storage_address = Enum.at(mem, instruction_pointer + 3)
+    value = evaluate_operation(opcode, lhs, rhs)
+    mem = List.replace_at(mem, storage_address, value)
     mem
   end
 
-  def evaluate_instruction(1, lhs, rhs) do
+  def evaluate_operation(1, lhs, rhs) do
     lhs + rhs
   end
 
-  def evaluate_instruction(2, lhs, rhs) do
+  def evaluate_operation(2, lhs, rhs) do
     lhs * rhs
   end
 end
