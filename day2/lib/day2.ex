@@ -3,11 +3,29 @@ defmodule Day2 do
     mem = IntcodeComputer.import_program('input')
     IntcodeComputer.execute_program(mem, 2, 12)
   end
+
+  def part_2 do
+    mem = IntcodeComputer.import_program('input')
+    noun_verbs = for x <- 0..99, y <- 0..99, do: {x, y}
+
+    {noun, verb} =
+      Enum.reduce_while(noun_verbs, nil, fn {x, y}, _ ->
+        result = IntcodeComputer.execute_program(mem, x, y)
+
+        case result do
+          19_690_720 -> {:halt, {x, y}}
+          _ -> {:cont, nil}
+        end
+      end)
+
+    100 * noun + verb
+  end
 end
 
 defmodule IntcodeComputer do
   def import_program(path) do
     file = File.read!(path)
+
     String.split(file, ",")
     |> Enum.map(&Integer.parse/1)
     |> Enum.map(&Kernel.elem(&1, 0))
@@ -22,9 +40,15 @@ defmodule IntcodeComputer do
         op_code = if instruction_pointer >= 0, do: Enum.at(mem, instruction_pointer), else: nil
 
         case op_code do
-          nil -> nil
-          99 -> {Enum.at(mem, 0), {-1, mem}}
-          _ -> {Enum.at(mem, 0), {instruction_pointer + 4, execute_instruction(instruction_pointer, mem)}}
+          nil ->
+            nil
+
+          99 ->
+            {Enum.at(mem, 0), {-1, mem}}
+
+          _ ->
+            {Enum.at(mem, 0),
+             {instruction_pointer + 4, execute_instruction(instruction_pointer, mem)}}
         end
       end)
 
@@ -49,4 +73,3 @@ defmodule IntcodeComputer do
     lhs * rhs
   end
 end
-
