@@ -1,22 +1,22 @@
 defmodule Day2 do
-  def solve do
+  def part_1 do
     mem = IntcodeComputer.import_program('input')
-    mem = List.replace_at(mem, 1, 12)
-    mem = List.replace_at(mem, 2, 2)
-    IntcodeComputer.execute_program(mem)
+    IntcodeComputer.execute_program(mem, 2, 12)
   end
 end
 
 defmodule IntcodeComputer do
   def import_program(path) do
     file = File.read!(path)
-
     String.split(file, ",")
     |> Enum.map(&Integer.parse/1)
     |> Enum.map(&Kernel.elem(&1, 0))
   end
 
-  def execute_program(mem) do
+  def execute_program(mem, noun, verb) do
+    mem = List.replace_at(mem, 1, noun)
+    mem = List.replace_at(mem, 2, verb)
+
     stream =
       Stream.unfold({0, mem}, fn {instruction_pointer, mem} ->
         op_code = if instruction_pointer >= 0, do: Enum.at(mem, instruction_pointer), else: nil
